@@ -48,6 +48,9 @@ get "/" do
 end
 
 get '/connect' do
+  if settings.atoken
+    redirect "/"
+  end
   request_token = get_oauth.consumer.get_request_token
   settings.rtoken, settings.rsecret = request_token.token, request_token.secret
   redirect "#{request_token.authorize_url}&oauth_callback=http://#{request.env["HTTP_HOST"]}/callback"
