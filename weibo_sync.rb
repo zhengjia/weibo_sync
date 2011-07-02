@@ -70,8 +70,9 @@ get "/hub_callback" do
 end
 
 post "/hub_callback" do
-  puts request.body.inspect
-  tweets = parse(request.body)
+  body = request.body.read
+  puts body
+  tweets = parse(body)
   if settings.atoken
     tweets.each do |tweet|
       update(tweet)
@@ -80,4 +81,3 @@ post "/hub_callback" do
     puts "Authentication data is lost!!!"
   end
 end
-
