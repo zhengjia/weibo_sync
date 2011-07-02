@@ -47,10 +47,6 @@ get "/" do
   "connected!"
 end
 
-get "/subscribe/:verify" do
-  params[:verify]
-end
-
 get '/connect' do
   request_token = get_oauth.consumer.get_request_token
   settings.rtoken, settings.rsecret = request_token.token, request_token.secret
@@ -63,6 +59,11 @@ get '/callback' do
   settings.rtoken, settings.rsecret = nil, nil
   settings.atoken, settings.asecret = oauth.access_token.token, oauth.access_token.secret
   redirect "/"
+end
+
+get "/hub_callback" do
+  content_type 'text/plain', :charset => 'utf-8'
+  params['hub.challenge']
 end
 
 post "/hub_callback" do
