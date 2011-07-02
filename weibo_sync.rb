@@ -6,9 +6,15 @@ require 'weibo'
 configure do
 
   enable :sessions
-  config = YAML::load File.open( './config.yml' )
-  Weibo::Config.api_key = config['api_key']
-  Weibo::Config.api_secret = config['api_secret']
+  begin
+    config = YAML::load File.open( './config.yml' )
+    Weibo::Config.api_key = config['api_key']
+    Weibo::Config.api_secret = config['api_secret']
+  rescue Errno::ENOENT
+    # on heroku add: heroku config:add api_key=YOUR_API_KEY api_secret=YOU_API_SECRET
+    Weibo::Config.api_key = ENV['api_key']
+    Weibo::Config.api_secret = ENV['api_secret']
+  end
   set :rtoken, nil
   set :rsecret, nil
   set :atoken, nil
