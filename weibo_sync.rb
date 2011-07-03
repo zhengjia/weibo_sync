@@ -56,10 +56,6 @@ helpers do
     end
   end
 
-  def request_headers
-    env.inject({}){|acc, (k,v)| acc[$1.downcase] = v if k =~ /^x_(.*)/i; acc}
-  end
-
 end
 
 get "/" do
@@ -102,9 +98,7 @@ get "/hub_callback" do
 end
 
 post "/hub_callback" do
-
-  puts request_headers.inspect
-
+  puts request.env.dup.inspect
   tweets = parse(request.body.read)
   if authenticated?
     tweets.each do |tweet|
