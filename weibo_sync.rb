@@ -1,5 +1,5 @@
 require 'yaml'
-require 'nokigiri'
+require 'nokogiri'
 require 'weibo'
 
 configure do
