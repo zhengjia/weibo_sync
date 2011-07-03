@@ -1,6 +1,8 @@
 require 'yaml'
 require 'nokogiri'
 require 'weibo'
+require 'base64'
+require 'openssl'
 
 configure do
 
@@ -10,11 +12,13 @@ configure do
     Weibo::Config.api_key = config['api_key']
     Weibo::Config.api_secret = config['api_secret']
     set :verify_token, config['verify_token']
+    set :hmac_secret, config['hmac_secret']
   rescue Errno::ENOENT
     # on heroku add: heroku config:add api_key=YOUR_API_KEY api_secret=YOU_API_SECRET verify_token=YOUR_HUB_VERIFY_TOKEN
     Weibo::Config.api_key = ENV['api_key']
     Weibo::Config.api_secret = ENV['api_secret']
     set :verify_token, ENV['verify_token']
+    set :hmac_secret, ENV['hmac_secret']
   end
 
   # debug feed http://search.twitter.com/search.atom?q=1
@@ -98,14 +102,21 @@ get "/hub_callback" do
 end
 
 post "/hub_callback" do
-  puts request.env.dup.inspect
-  tweets = parse(request.body.read)
-  if authenticated?
-    tweets.each do |tweet|
-      update(tweet)
+  body = request.body.read
+  puts request.env['HTTP_X_HUB_SIGNATURE']
+  puts CGI.escape(Base64.encode64("#{OpenSSL::HMAC.digest('sha1', settings.hmac_secret, body)}\n"))
+  if !request.env['HTTP_X_HUB_SIGNATURE'].empty? && request.env['HTTP_X_HUB_SIGNATURE'] =~ CGI.escape(Base64.encode64("#{OpenSSL::HMAC.digest('sha1', settings.hmac_secret, body)}\n"))
+    tweets = parse(body)
+    if authenticated?
+      tweets.each do |tweet|
+        update(tweet)
+      end
+    else
+      status 401
+      puts "Authentication data is lost!!!"
     end
   else
     status 401
-    puts "Authentication data is lost!!!"
+    "Where are you from?"
   end
 end

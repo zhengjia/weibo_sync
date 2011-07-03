@@ -2,3 +2,4 @@
 api_key: YOUR_API_KEY
 api_secret: YOUR_API_SECRET
 verify_token: YOUR_HUB_VERIFY_TOKEN
+hmac_secret: YOUR_HMAC_SECRET
