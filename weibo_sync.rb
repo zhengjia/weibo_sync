@@ -81,8 +81,7 @@ get '/callback' do
   atoken, asecret = oauth.access_token.token, oauth.access_token.secret
   puts "atoken: #{atoken}"
   puts "asecret: #{asecret}"
-  ENV["atoken"] = atoken
-  ENV["asecret"] = asecret
+  # check logs and manually add the envs by heroku config:add atoken=xxx asecret=yyy
   redirect "/"
 end
 
