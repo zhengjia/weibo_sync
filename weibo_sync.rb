@@ -41,6 +41,10 @@ helpers do
     end
   end
 
+  def authenticated?
+    settings.atoken
+  end
+
   def parse(body)
     return [body]
   end
@@ -48,14 +52,14 @@ helpers do
 end
 
 get "/" do
-  unless settings.atoken
+  unless authenticated?
     redirect "/connect"
   end
   "connected!"
 end
 
 get '/connect' do
-  if settings.atoken
+  if authenticated?
     redirect "/"
   end
   request_token = get_oauth.consumer.get_request_token
@@ -72,6 +76,9 @@ get '/callback' do
 end
 
 get "/hub_callback" do
+  unless authenticated?
+    status 401
+  end
   if params['hub.verify_token'] == settings.verify_token && params['hub.topic'] == settings.topic
     content_type 'text/plain', :charset => 'utf-8'
     params['hub.challenge']
@@ -83,13 +90,14 @@ end
 post "/hub_callback" do
   body = request.body.read
   puts body
+  puts request.inspect
   tweets = parse(body)
-  if settings.atoken
+  if authenticated?
     tweets.each do |tweet|
       update(tweet)
     end
   else
-    status 404
+    status 401
     puts "Authentication data is lost!!!"
   end
 end
