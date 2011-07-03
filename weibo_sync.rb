@@ -1,5 +1,3 @@
-# publisher is at http://feeds.feedburner.com/sync_to_weibo
-
 require 'yaml'
 require 'weibo'
 
@@ -10,11 +8,16 @@ configure do
     config = YAML::load File.open( './config.yml' )
     Weibo::Config.api_key = config['api_key']
     Weibo::Config.api_secret = config['api_secret']
+    set :verify_token, config['verify_token']
   rescue Errno::ENOENT
-    # on heroku add: heroku config:add api_key=YOUR_API_KEY api_secret=YOU_API_SECRET
+    # on heroku add: heroku config:add api_key=YOUR_API_KEY api_secret=YOU_API_SECRET verify_token=YOUR_HUB_VERIFY_TOKEN
     Weibo::Config.api_key = ENV['api_key']
     Weibo::Config.api_secret = ENV['api_secret']
+    set :verify_token, ENV['verify_token']
   end
+
+  set :topic, "http://feeds.feedburner.com/sync_to_weibo"
+
   set :rtoken, nil
   set :rsecret, nil
   set :atoken, nil
@@ -65,8 +68,12 @@ get '/callback' do
 end
 
 get "/hub_callback" do
-  content_type 'text/plain', :charset => 'utf-8'
-  params['hub.challenge']
+  if params['hub.verify_token'] == settings.verify_token && params['hub.topic'] == settings.topic
+    content_type 'text/plain', :charset => 'utf-8'
+    params['hub.challenge']
+  else
+    status 404
+  end
 end
 
 post "/hub_callback" do
