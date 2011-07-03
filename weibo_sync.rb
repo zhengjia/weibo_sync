@@ -1,7 +1,6 @@
 require 'yaml'
 require 'nokogiri'
 require 'weibo'
-require 'base64'
 require 'openssl'
 
 configure do
@@ -103,9 +102,12 @@ end
 
 post "/hub_callback" do
   body = request.body.read
+  hmac = OpenSSL::HMAC.new('sha1', settings.hmac_secret)
+  hmac.update(body)
+  verify_signature = hmac.hexdigest
   puts request.env['HTTP_X_HUB_SIGNATURE']
-  puts CGI.escape(Base64.encode64("#{OpenSSL::HMAC.digest('sha1', settings.hmac_secret, body)}\n"))
-  if !request.env['HTTP_X_HUB_SIGNATURE'].empty? && request.env['HTTP_X_HUB_SIGNATURE'] =~ CGI.escape(Base64.encode64("#{OpenSSL::HMAC.digest('sha1', settings.hmac_secret, body)}\n"))
+  puts verify_signature
+  if !request.env['HTTP_X_HUB_SIGNATURE'].empty? && request.env['HTTP_X_HUB_SIGNATURE'] =~ /#{verify_signature}/
     tweets = parse(body)
     if authenticated?
       tweets.each do |tweet|
