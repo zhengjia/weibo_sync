@@ -102,7 +102,9 @@ get "/hub_callback" do
 end
 
 post "/hub_callback" do
+
   puts request_headers.inspect
+
   tweets = parse(request.body.read)
   if authenticated?
     tweets.each do |tweet|
