@@ -33,6 +33,7 @@ helpers do
   end
 
   def update(msg)
+    msg = msg[0..139]
     begin
       oauth = get_oauth
       oauth.authorize_from_access(settings.atoken, settings.asecret)
@@ -48,7 +49,12 @@ helpers do
   end
 
   def parse(body)
-    return [body]
+    xml = CGI::unescape(body)
+    atom = Nokogiri::XML::Document.parse xml
+    entries = atom.css("entry")
+    entries.collect do |entry|
+      entry.css("title").text
+    end
   end
 
 end
@@ -90,10 +96,9 @@ get "/hub_callback" do
 end
 
 post "/hub_callback" do
-  body = request.body.read
   puts request["X-Hub-Signature"]
   puts request.ip
-  tweets = parse(body)
+  tweets = parse(request.body.read)
   if authenticated?
     tweets.each do |tweet|
       update(tweet)
