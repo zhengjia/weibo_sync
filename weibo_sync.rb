@@ -16,6 +16,7 @@ configure do
     set :verify_token, ENV['verify_token']
   end
 
+  # debug feed http://search.twitter.com/search.atom?q=1
   set :topic, "http://feeds.feedburner.com/sync_to_weibo"
 
   set :rtoken, nil
@@ -36,8 +37,9 @@ helpers do
       oauth = get_oauth
       oauth.authorize_from_access(settings.atoken, settings.asecret)
       Weibo::Base.new(oauth).update(msg)
-    rescue
+    rescue => e
       status 401
+      puts "error when update weibo #{e.inspect}"
     end
   end
 
@@ -89,7 +91,7 @@ end
 
 post "/hub_callback" do
   body = request.body.read
-  puts params.inspect
+  puts request["X-Hub-Signature"]
   tweets = parse(body)
   if authenticated?
     tweets.each do |tweet|
