@@ -32,9 +32,13 @@ helpers do
   end
 
   def update(msg)
-    oauth = get_oauth
-    oauth.authorize_from_access(settings.atoken, settings.asecret)
-    Weibo::Base.new(oauth).update(msg)
+    begin
+      oauth = get_oauth
+      oauth.authorize_from_access(settings.atoken, settings.asecret)
+      Weibo::Base.new(oauth).update(msg)
+    rescue
+      status 401
+    end
   end
 
   def parse(body)
@@ -85,6 +89,7 @@ post "/hub_callback" do
       update(tweet)
     end
   else
+    status 404
     puts "Authentication data is lost!!!"
   end
 end
