@@ -105,7 +105,7 @@ post "/hub_callback" do
   hmac = OpenSSL::HMAC.new(settings.hmac_secret, OpenSSL::Digest::Digest.new('sha1'))
   hmac.update(body)
   verify_signature = hmac.hexdigest
-  if !request.env['HTTP_X_HUB_SIGNATURE'].empty? && request.env['HTTP_X_HUB_SIGNATURE'].split("=")[1] == verify_signature}
+  if !request.env['HTTP_X_HUB_SIGNATURE'].empty? && request.env['HTTP_X_HUB_SIGNATURE'].split("=")[1] == verify_signature
     tweets = parse(body)
     if authenticated?
       tweets.each do |tweet|
