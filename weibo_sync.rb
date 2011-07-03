@@ -102,7 +102,7 @@ end
 
 post "/hub_callback" do
   body = request.body.read
-  hmac = OpenSSL::HMAC.new('sha1', settings.hmac_secret)
+  hmac = OpenSSL::HMAC.new(settings.hmac_secret, OpenSSL::Digest::Digest.new('sha1'))
   hmac.update(body)
   verify_signature = hmac.hexdigest
   puts request.env['HTTP_X_HUB_SIGNATURE']
