@@ -41,7 +41,7 @@ helpers do
       Weibo::Base.new(oauth).update(msg)
     rescue => e
       status 401
-      puts "error when update weibo #{e.inspect}"
+      puts "error when updating weibo #{e.inspect}"
     end
   end
 
@@ -54,7 +54,7 @@ helpers do
     atom = Nokogiri::XML::Document.parse xml
     entries = atom.css("entry")
     entries.collect do |entry|
-      entry.css("title").text
+      entry.css("title").text + " " + entry.css("link[rel='alternate']").first.attributes['href'].value
     end
   end
 
