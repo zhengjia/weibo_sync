@@ -22,8 +22,6 @@ configure do
 
   set :rtoken, nil
   set :rsecret, nil
-  set :atoken, nil
-  set :asecret, nil
 
 end
 
@@ -37,7 +35,7 @@ helpers do
     msg = msg[0..139]
     begin
       oauth = get_oauth
-      oauth.authorize_from_access(settings.atoken, settings.asecret)
+      oauth.authorize_from_access(ENV['atoken'], ENV['asecret'])
       Weibo::Base.new(oauth).update(msg)
     rescue => e
       status 401
@@ -46,7 +44,7 @@ helpers do
   end
 
   def authenticated?
-    settings.atoken
+    ENV['atoken']
   end
 
   def parse(body)
@@ -80,7 +78,11 @@ get '/callback' do
   oauth = get_oauth
   oauth.authorize_from_request(settings.rtoken, settings.rsecret, params[:oauth_verifier])
   settings.rtoken, settings.rsecret = nil, nil
-  settings.atoken, settings.asecret = oauth.access_token.token, oauth.access_token.secret
+  atoken, asecret = oauth.access_token.token, oauth.access_token.secret
+  puts "atoken: #{atoken}"
+  puts "asecret: #{asecret}"
+  ENV["atoken"] = atoken
+  ENV["asecret"] = asecret
   redirect "/"
 end
 
