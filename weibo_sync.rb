@@ -92,6 +92,7 @@ end
 post "/hub_callback" do
   body = request.body.read
   puts request["X-Hub-Signature"]
+  puts request.ip
   tweets = parse(body)
   if authenticated?
     tweets.each do |tweet|
