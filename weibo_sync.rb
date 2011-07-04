@@ -57,8 +57,8 @@ helpers do
     entries.collect do |entry|
       tweet = entry.css("title").text + " " + entry.css("link[rel='alternate']").first.attributes['href'].value + "\n" +
       if entry.css("id").text =~ /WatchEvent/
-        entry.css("content").text.match /<blockquote>(.*)<\/blockquote>/
-        tweet += $1
+        entry.css("content").text.match /&lt;blockquote&gt;(.*)&lt;\/blockquote&lt;/
+        tweet += $1 if $1
       elsif entry.css("id").text =~ /PushEvent/
         content = Nokogiri.parse entry.css("content").text
         content.css("li").each do |li|
