@@ -55,7 +55,18 @@ helpers do
     atom = Nokogiri::XML::Document.parse xml
     entries = atom.css("entry")
     entries.collect do |entry|
-      entry.css("title").text + " " + entry.css("link[rel='alternate']").first.attributes['href'].value
+      tweet = entry.css("title").text + " " + entry.css("link[rel='alternate']").first.attributes['href'].value + "\n" +
+      if entry.css("id").text =~ /WatchEvent/
+        entry.css("content").text.match /<blockquote>(.*)<\/blockquote>/
+        tweet += $1
+      elsif entry.css("id").text =~ /PushEvent/
+        content = Nokogiri.parse entry.css("content").text
+        content.css("li").each do |li|
+          commit_message = li.text.strip
+          link = li.css("a").last.attr("href")
+          commit_message + " https://www.github.com#{link}"
+        end
+      end
     end
   end
 
